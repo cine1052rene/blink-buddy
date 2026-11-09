@@ -1,0 +1,61 @@
+- !<AssetImportMetadata/6f6b701f-0390-443a-8de2-5330adbee6ff>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> a6af5cb6-b157-4b79-b293-4ef17a265c7a
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> a6af5cb6-b157-4b79-b293-4ef17a265c7a
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 5f1d0e3e-1253-462a-939c-cc18d5ba0e9b
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/5f1d0e3e-1253-462a-939c-cc18d5ba0e9b>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  VersionPrerelease: ""
+  UpdateOrder: 0
+  ComponentUid: feba0755-5175-402e-95bf-b2d7ee9de7e9
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    baseMat: false
+    blinkIntervalSec: false
+    boxMesh: false
+    breakIntervalSec: false
+    demoAutoPlay: false
+    sphereMesh: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - sphereMesh: !<reference.RenderMesh> 00000000-0000-0000-0000-000000000000
+      boxMesh: !<reference.RenderMesh> 00000000-0000-0000-0000-000000000000
+      baseMat: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      demoAutoPlay: true
+      blinkIntervalSec: !<float> 240.000000
+      breakIntervalSec: !<float> 1200.000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input Asset.RenderMesh sphereMesh
+    - // @input Asset.RenderMesh boxMesh
+    - // @input Asset.Material baseMat
+    - // @input bool demoAutoPlay = true
+    - // @input float blinkIntervalSec = 240
+    - // @input float breakIntervalSec = 1200
