@@ -5,9 +5,9 @@ import {Builder, HILL, OUTLINE, SOFT, WARM, WHITE} from "./BBVisuals"
 
 export type BBState = "OFF" | "IDLE" | "CUE" | "FLY_OUT" | "LOOK" | "EIGHT" | "RETURN"
 
-const HOME = new vec3(25, -22, -70) // ~20 deg right of gaze, slightly low, beside the monitor
-const WINDOW_POS = new vec3(-250, 10, -600) // 6 m away, front-left
-const WINDOW_STOP = new vec3(-250, 10, -560)
+const HOME = new vec3(14, -8, -70) // ~20 deg right of gaze, slightly low, beside the monitor
+const WINDOW_POS = new vec3(-100, 10, -600) // 6 m away, front-left
+const WINDOW_STOP = new vec3(-100, 10, -560)
 const EIGHT_CENTER = new vec3(0, 0, -150)
 const CUE_BLINKS = 3
 const CUE_TIMEOUT = 10
@@ -96,8 +96,8 @@ export class BlinkBuddy extends BaseScriptComponent {
     this.worldGroup = b.obj("BB_World", this.content)
 
     // Stand-in virtual monitor (faint outline), 70 cm ahead, eye level - 15 cm.
-    const mon = (this.monitorObj = b.outline("StandInMonitor", this.worldGroup, new vec3(0, -15, -70), 50, 30, 0.5, SOFT))
-    b.text("MonitorLabel", mon, new vec3(0, 18, 0), "stand-in monitor", 18, SOFT, 30, 4)
+    const mon = (this.monitorObj = b.outline("StandInMonitor", this.worldGroup, new vec3(-4, -8, -70), 26, 16, 0.5, SOFT))
+    b.text("MonitorLabel", mon, new vec3(0, 10, 0), "stand-in monitor", 12, SOFT, 30, 4)
 
     // Stand-in window, 6 m away, 120 x 90 cm, faint blue outline + hills.
     this.windowObj = b.outline("StandInWindow", this.worldGroup, WINDOW_POS, 120, 90, 3, OUTLINE)
@@ -117,11 +117,10 @@ export class BlinkBuddy extends BaseScriptComponent {
     // Firefly (pinch target), card, ring timer.
     this.fireflyGroup = b.obj("Firefly", this.worldGroup, HOME)
     this.fireflyBody = b.ball("FireflyBody", this.fireflyGroup, vec3.zero(), 6, WARM)
-    b.ball("FireflyGlow", this.fireflyGroup, vec3.zero(), 9, new vec4(0.35, 0.28, 0.08, 1))
     this.eyeL = b.ball("EyeL", this.fireflyGroup, new vec3(-1.2, 0.6, 2.7), 1.3, WHITE)
     this.eyeR = b.ball("EyeR", this.fireflyGroup, new vec3(1.2, 0.6, 2.7), 1.3, WHITE)
     b.pinchable(this.fireflyGroup, 6, () => this.onFireflyPinch())
-    this.card = b.text("Card", this.fireflyGroup, new vec3(0, -9, 0), "", 30, WHITE, 40, 8)
+    this.card = b.text("Card", this.fireflyGroup, new vec3(0, -10, 3.5), "", 40, WHITE, 40, 8)
     this.ringGroup = b.obj("Ring", this.fireflyGroup)
     for (let i = 0; i < RING_DOTS; i++) {
       const a = (i / RING_DOTS) * Math.PI * 2
@@ -130,13 +129,15 @@ export class BlinkBuddy extends BaseScriptComponent {
     this.ringGroup.enabled = false
 
     // Buttons below the monitor.
-    const tgl = (this.toggleObj = b.slab("FocusToggle", this.content, new vec3(0, -40, -70), new vec3(14, 5, 1), new vec4(0.2, 0.45, 0.5, 1)))
-    this.toggleLabel = b.text("FocusLabel", tgl, new vec3(0, 0, 0.6), "Focus: OFF", 22, WHITE, 14, 5)
-    b.pinchableBox(tgl, new vec3(1, 1, 1), () => this.setFocus(!this.focusOn))
-    tgl.getTransform().setLocalScale(new vec3(14, 5, 1))
-    this.skipBtn = b.slab("SkipButton", this.worldGroup, new vec3(22, -40, -70), new vec3(18, 5, 1), new vec4(0.5, 0.35, 0.15, 1))
-    b.text("SkipLabel", this.skipBtn, new vec3(0, 0, 0.6), "Demo: skip 20 min", 18, WHITE, 18, 5)
-    b.pinchableBox(this.skipBtn, new vec3(1, 1, 1), () => this.skipTimer())
+    // Buttons below the monitor: an unscaled group (collider + Interactable) holding a scaled slab and its label.
+    const tgl = (this.toggleObj = b.obj("FocusToggle", this.content, new vec3(-8, -21, -70)))
+    b.slab("FocusToggleSlab", tgl, vec3.zero(), new vec3(14, 5, 1), new vec4(0.2, 0.45, 0.5, 1))
+    this.toggleLabel = b.text("FocusLabel", tgl, new vec3(0, 0, 0.7), "Focus: OFF", 20, WHITE, 14, 5)
+    b.pinchableBox(tgl, new vec3(14, 5, 2), () => this.setFocus(!this.focusOn))
+    this.skipBtn = b.obj("SkipButton", this.worldGroup, new vec3(10, -21, -70))
+    b.slab("SkipSlab", this.skipBtn, vec3.zero(), new vec3(16, 5, 1), new vec4(0.5, 0.35, 0.15, 1))
+    b.text("SkipLabel", this.skipBtn, new vec3(0, 0, 0.7), "Demo: skip 20 min", 11, WHITE, 16, 5)
+    b.pinchableBox(this.skipBtn, new vec3(16, 5, 2), () => this.skipTimer())
 
     this.worldGroup.enabled = false
     this.ready = true
@@ -235,10 +236,11 @@ export class BlinkBuddy extends BaseScriptComponent {
 
   private windowHint(): string {
     const cam = WorldCameraFinderProvider.getInstance().getTransform()
-    const toWin = this.windowObj.getTransform().getWorldPosition().sub(this.head()).normalize()
-    const fwd = cam.back.uniformScale(-1)
-    if (fwd.dot(toWin) > Math.cos((35 * Math.PI) / 180)) return ""
-    return cam.right.dot(toWin) < 0 ? "<< " : ">> "
+    // window position in the camera's own space (camera looks down -Z)
+    const p = cam.getInvertedWorldTransform().multiplyPoint(this.windowObj.getTransform().getWorldPosition())
+    const angle = Math.atan2(Math.sqrt(p.x * p.x + p.y * p.y), -p.z)
+    if (angle < (28 * Math.PI) / 180) return ""
+    return p.x < 0 ? "<< " : ">> "
   }
 
   private update(dt: number) {
@@ -313,7 +315,7 @@ export class BlinkBuddy extends BaseScriptComponent {
       case "LOOK": {
         ft.setLocalPosition(new vec3(WINDOW_STOP.x, WINDOW_STOP.y + bob * 4, WINDOW_STOP.z))
         this.ringRemaining = Math.max(0, LOOK_TIME - this.stateT)
-        this.say(this.windowHint() + "Look at the real window for 20 seconds. Let your focus relax.", 0)
+        this.say(this.windowHint() + "Look at the real window\nfor 20 seconds.\nLet your focus relax.", 0)
         const on = Math.ceil(this.ringRemaining)
         for (let i = 0; i < RING_DOTS; i++) this.ringDots[i].enabled = i < on
         if (this.stateT >= LOOK_TIME) {
@@ -321,7 +323,7 @@ export class BlinkBuddy extends BaseScriptComponent {
           this.pathGroup.enabled = true
           this.flyFrom = ft.getLocalPosition()
           this.setState("EIGHT")
-          this.say("follow me with your eyes, not your head", 0)
+          this.say("follow me with your eyes,\nnot your head", 0)
         }
         break
       }

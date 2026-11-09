@@ -4,6 +4,10 @@
     - !<own> 00000000-0000-0065-0000-000000000064
     - !<own> 0005641c-028d-459a-0000-000000014b4d
     - !<own> f5d74682-203a-4970-81ea-9fa7b88c96bb
+    - !<own> ae1bb8f9-66bf-4e0d-8fb7-fcfd6a42731e
+    - !<own> ccba114b-ef36-4b7f-b8b7-6bcc31f1074a
+    - !<own> 4165c1c7-25bb-42db-a396-dfb5809a4e62
+    - !<own> 81cfe5d5-d3d3-4dc3-b181-08e9fe2fe63f
   layers: !<Layers/267ee9a7-aff2-4f9d-9a49-f71214747d03>
     userLayers:
       - id: 1
@@ -394,6 +398,29 @@
     []
   Components:
     []
+- !<ScriptComponent/0e287165-5544-4d3d-9e6b-8a07a48a6d57>
+  PrefabRemaps:
+    []
+  Name: BlinkBuddy
+  Enabled: true
+  ScriptAsset: !<reference> a6af5cb6-b157-4b79-b293-4ef17a265c7a
+  ScriptInputsDefault:
+    demoAutoPlay: true
+    blinkIntervalSec: true
+    breakIntervalSec: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      sphereMesh: !<reference.RenderMesh> c18c0f82-f2de-4980-bd0b-09c94a410eab
+      boxMesh: !<reference.RenderMesh> cc67a67d-03db-4253-a6f8-9368c22f7707
+      baseMat: !<reference.Material> 64dc013b-fb49-4c3c-96f2-5eb6d83a2364
+      demoAutoPlay: true
+      blinkIntervalSec: !<float> 240.000000
+      breakIntervalSec: !<float> 1200.000000
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/0e778a10-bd57-4a2a-b20a-b6f4326e8058>
   PrefabRemaps:
     []
@@ -824,6 +851,22 @@
     - !<own> 54130007-65c1-48d3-b9df-0866d8112e01
   Components:
     []
+- !<ScriptComponent/3c2b0fa2-a2d6-4ea9-a095-6740a9e9d868>
+  PrefabRemaps:
+    []
+  Name: AgentInteractScript
+  Enabled: true
+  ScriptAsset: !<reference> 29091811-e792-46be-bfa4-28ddec5f11be
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      {}
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/3de2c7ea-1525-465a-9056-68565a4014a7>
   PrefabRemaps:
     []
@@ -854,6 +897,21 @@
     - !<own> 7aa85bd8-d423-42cd-b190-473711e94929
   Components:
     []
+- !<SceneObject/4165c1c7-25bb-42db-a396-dfb5809a4e62>
+  PrefabRemaps:
+    []
+  Name: LeafIndex
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> cd0eb8b0-5cda-4d89-b3ba-1dd0a413b4d1
 - !<SceneObject/421c3378-3246-429d-bd2f-4ee81f6751a7>
   PrefabRemaps:
     []
@@ -989,6 +1047,22 @@
     - !<own> bf2095b6-c6f8-48c8-b840-e0a6cec0dc99
   Components:
     []
+- !<ScriptComponent/5d29aaf7-b565-4460-976c-617643075ff0>
+  PrefabRemaps:
+    []
+  Name: AgentInspectScript
+  Enabled: true
+  ScriptAsset: !<reference> 0b25079c-f5bf-4c6d-96c4-f43b89dfa213
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      {}
+  ScriptTypes:
+    "":
+      {}
 - !<ScriptComponent/5f153ad7-2baa-4fd9-a298-0dcfad86da3b>
   PrefabRemaps:
     []
@@ -1353,6 +1427,22 @@
     - !<own> 58ef319f-850e-40dd-8295-e6dc36ab4854
   Components:
     []
+- !<ScriptComponent/7ed2dbf6-cc2a-45fa-a703-97165291ec87>
+  PrefabRemaps:
+    []
+  Name: BBScenarioClient
+  Enabled: true
+  ScriptAsset: !<reference> 8577d708-f6aa-430a-93ec-a2f439113bfe
+  ScriptInputsDefault:
+    only: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      only: ""
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/7fb3591f-54a2-4aee-b07d-fd10d56538c8>
   PrefabRemaps:
     []
@@ -1398,6 +1488,21 @@
     []
   Components:
     - !<own> 335c5f8b-2917-49e8-8af5-220696e9bc09
+- !<SceneObject/81cfe5d5-d3d3-4dc3-b181-08e9fe2fe63f>
+  PrefabRemaps:
+    []
+  Name: LeafRunner
+  Enabled: false
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 7ed2dbf6-cc2a-45fa-a703-97165291ec87
 - !<SceneObject/82a4b4e8-283b-441c-8b94-9fdc50c958f2>
   PrefabRemaps:
     []
@@ -1775,6 +1880,21 @@
     - !<own> f6687ab7-52ac-408d-a892-8a9559125450
   Components:
     []
+- !<SceneObject/ae1bb8f9-66bf-4e0d-8fb7-fcfd6a42731e>
+  PrefabRemaps:
+    []
+  Name: BlinkBuddy
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 0e287165-5544-4d3d-9e6b-8a07a48a6d57
 - !<SceneObject/b22d97e6-4c06-4135-af29-d26adb2b9d86>
   PrefabRemaps:
     []
@@ -1998,6 +2118,22 @@
     - !<own> 0a0e1d78-8246-4f5b-ab1a-fdc51837956d
   Components:
     []
+- !<SceneObject/ccba114b-ef36-4b7f-b8b7-6bcc31f1074a>
+  PrefabRemaps:
+    []
+  Name: AiPreviewAgent Handler
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 5d29aaf7-b565-4460-976c-617643075ff0
+    - !<own> 3c2b0fa2-a2d6-4ea9-a095-6740a9e9d868
 - !<Skin/ccf4d3bc-d3c2-4580-b9c5-62f164ef7eef>
   PrefabRemaps:
     []
@@ -2053,6 +2189,22 @@
     index-2: !<reference> 2dae2a27-8ce6-466a-8bff-622195c1b3a8
     thumb-3_end_end_end_end: !<reference> bf2095b6-c6f8-48c8-b840-e0a6cec0dc99
     wrist_to_pinky: !<reference> 3b4f5057-b516-4d3b-9c8d-14c81af2f505
+- !<ScriptComponent/cd0eb8b0-5cda-4d89-b3ba-1dd0a413b4d1>
+  PrefabRemaps:
+    []
+  Name: LeafIndex
+  Enabled: true
+  ScriptAsset: !<reference> d506d6c9-11b4-4e17-9fe4-ddbafdf6cf2b
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      {}
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/ce2213a1-7aa1-4201-a3c7-c2aaa06fd4ff>
   PrefabRemaps:
     []

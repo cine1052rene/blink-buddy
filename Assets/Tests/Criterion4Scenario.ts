@@ -35,6 +35,6 @@ export class Criterion4Scenario extends Scenario {
     expect(bb().state).toBe("IDLE")
     expect(cardText()).toBe("Back to work, eyes refreshed")
     const home = root.getInvertedWorldTransform().multiplyPoint(ff.getWorldPosition())
-    expect(Math.abs(home.x - 25) < 3 && Math.abs(home.z + 70) < 3).toBe(true)
+    expect(Math.abs(home.x - 14) < 3 && Math.abs(home.z + 70) < 3).toBe(true)
   }
 }

@@ -10,11 +10,12 @@ Decisions made while building (nobody was available for questions). Built 2026-1
 - All content is created in `Assets/Scripts/BlinkBuddy.ts` (+ `BBVisuals.ts` helpers) when the Lens starts, in a root placed at the camera's start position and yaw.
 
 ## Layout (cm, relative to the head at start; -Z is forward)
-- Stand-in monitor outline 50x30 at (0,-15,-70), labelled "stand-in monitor".
-- Firefly home (25,-22,-70): about 20 degrees right of gaze, slightly low, 6 cm, bobs. 12 cm pinch collider.
-- Stand-in window 120x90 at (-250,10,-600) with three hills, labelled "stand-in window". Straight-line distance is 650 cm (6 m ahead, 2.5 m left).
+The Interactive Preview only shows about +-16 degrees sideways (and about +-18 up/down), so the brief's wider layout fell partly outside the view. I pulled everything into that cone; the real-device layout from the brief is wider and could be restored.
+- Stand-in monitor outline 26x16 at (-4,-8,-70) (brief: larger, eye level - 15 cm), labelled "stand-in monitor".
+- Firefly home (14,-8,-70): about 11 degrees right of gaze and slightly low (brief: ~20 degrees), 6 cm, bobs. 12 cm pinch collider.
+- Stand-in window 120x90 at (-100,10,-600), three dim hills, labelled "stand-in window". About 6 m ahead, 1 m left, so 608 cm straight-line (brief: front-left; I moved it from 2.5 m left to 1 m left so it is inside the preview view).
 - Figure-eight: 40 cm wide, 20 cm tall, centred (0,0,-150), faint dots.
-- Buttons below the monitor: `FocusToggle` (0,-40,-70) and `SkipButton` "Demo: skip 20 min" (22,-40,-70).
+- Buttons below the monitor: `FocusToggle` (-8,-21,-70) and `SkipButton` "Demo: skip 20 min" (10,-21,-70).
 
 ## Behaviour decisions
 - **Focus off hides everything except the Focus toggle**, otherwise there would be no way to turn it back on.
@@ -33,9 +34,14 @@ Decisions made while building (nobody was available for questions). Built 2026-1
 - Timeline from Focus on: 18 s + 2 s fly + 20 s look + 15 s figure-eight + 2 s return = **57 s** until the firefly is back at the monitor and shows "Back to work, eyes refreshed" (the card stays 5 s).
 - LEAF scenarios set `demoAutoPlay = false` first.
 
-## Tests
-- `Assets/Tests/Criterion1..6Scenario.ts`, registered in `LeafIndex.ts` (scene object `LeafIndex`).
-- `Assets/Tests/BBScenarioClient.ts` on scene object `LeafRunner` runs them one by one inside the preview and prints `[BBTEST] PASS/FAIL`. `LeafRunner` is **disabled** in the saved scene; enable it to re-run.
-- The LEAF panel MCP capabilities were not available in this session, so the scenarios were run through the in-Lens `ScenarioClient` (the scenario manager's own PASSED/FAILED lines are in the log).
-- No IK reachability scenario (all UI is at arm's reach by design but this was not tested).
-- Criterion 1's first run failed because my own bound (window < 650 cm) was too tight for the 650.2 cm straight-line distance. Fixed the test, not the Lens.
+## Tests (LEAF 2.0.2, run in the Interactive Preview, Evening Room)
+- `Assets/Tests/Criterion1..6Scenario.ts` (one per done criterion) + `DemoAutoPlayScenario.ts` (extra), registered in `LeafIndex.ts` (scene object `LeafIndex`).
+- `Assets/Tests/BBScenarioClient.ts` on scene object `LeafRunner` runs them one by one inside the preview and prints `[BBTEST] PASS/FAIL`. `LeafRunner` is **disabled** in the saved scene; enable it (and optionally set its `only` prefix, e.g. `c4`) to re-run.
+- The LEAF panel MCP capabilities were not available in this session, so the scenarios were run through the in-Lens `ScenarioClient` (the scenario manager's own PASSED/FAILED lines are in the Lens Studio log).
+- All scenarios call `freshStart()` first, which sets `demoAutoPlay = false`. Only the extra demo scenario turns it back on on purpose.
+- Results (final code): c1 PASS, c2 PASS, c3 PASS, c4 PASS, c5 PASS, c6 PASS, x7 demo timeline PASS.
+- Not tested: IK reachability (all controls were placed inside arm's reach, but no `createIKInteractor` scenario), the "window out of view" arrow, the "Never use while driving" note, the 10 s cue time-out, and any look-and-feel. Criterion 5 moves the head through `headPosOverride`, not through the real preview camera.
+- Criterion 1's first run failed because my own bound (window < 650 cm) was too tight for a 650.2 cm straight-line distance. Fixed the test, not the Lens.
+
+## Measured demo timeline (demoAutoPlay, seconds after Focus on)
+blink cue 4.0 | pinch (simulated) 9.0 | break starts 18.0 | at window 20.1 | figure-eight 40.1 | return starts 55.1 | back at monitor, "Back to work, eyes refreshed" 57.2.

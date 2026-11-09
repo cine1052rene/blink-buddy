@@ -49,16 +49,17 @@ export class Builder {
   }
 
   text(name: string, parent: SceneObject, pos: vec3, str: string, size: number, color: vec4, w = 40, h = 8): Text {
-    const o = this.obj(name, parent, pos)
-    const st = o.createComponent("Component.ScreenTransform") as ScreenTransform
-    void st
+    // A ScreenTransform ignores the object's local position, so the Text lives on a child of a positioned holder.
+    const holder = this.obj(name + "_Holder", parent, pos)
+    const o = this.obj(name, holder)
+    o.createComponent("Component.ScreenTransform")
     const t = o.createComponent("Component.Text") as Text
     t.text = str
     t.size = size
     t.textFill.color = color
     t.horizontalAlignment = HorizontalAlignment.Center
     t.verticalAlignment = VerticalAlignment.Center
-    t.horizontalOverflow = HorizontalOverflow.Wrap
+    t.horizontalOverflow = HorizontalOverflow.Overflow
     t.worldSpaceRect = Rect.create(-w / 2, w / 2, -h / 2, h / 2)
     return t
   }
@@ -91,5 +92,5 @@ export class Builder {
 export const WARM = new vec4(1.0, 0.82, 0.3, 1)
 export const SOFT = new vec4(0.85, 0.95, 1.0, 1)
 export const OUTLINE = new vec4(0.45, 0.8, 1.0, 1)
-export const HILL = new vec4(0.7, 0.9, 1.0, 1)
+export const HILL = new vec4(0.25, 0.4, 0.5, 1)
 export const WHITE = new vec4(1, 1, 1, 1)
