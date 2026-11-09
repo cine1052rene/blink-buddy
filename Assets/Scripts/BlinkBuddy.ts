@@ -53,6 +53,8 @@ export class BlinkBuddy extends BaseScriptComponent {
   private ringDots: SceneObject[] = []
   private pathGroup: SceneObject
   private windowObj: SceneObject
+  private monitorObj: SceneObject
+  private toggleObj: SceneObject
   private card: Text
   private toggleLabel: Text
   private ready = false
@@ -94,7 +96,7 @@ export class BlinkBuddy extends BaseScriptComponent {
     this.worldGroup = b.obj("BB_World", this.content)
 
     // Stand-in virtual monitor (faint outline), 70 cm ahead, eye level - 15 cm.
-    const mon = b.outline("StandInMonitor", this.worldGroup, new vec3(0, -15, -70), 50, 30, 0.5, SOFT)
+    const mon = (this.monitorObj = b.outline("StandInMonitor", this.worldGroup, new vec3(0, -15, -70), 50, 30, 0.5, SOFT))
     b.text("MonitorLabel", mon, new vec3(0, 18, 0), "stand-in monitor", 18, SOFT, 30, 4)
 
     // Stand-in window, 6 m away, 120 x 90 cm, faint blue outline + hills.
@@ -128,7 +130,7 @@ export class BlinkBuddy extends BaseScriptComponent {
     this.ringGroup.enabled = false
 
     // Buttons below the monitor.
-    const tgl = b.slab("FocusToggle", this.content, new vec3(0, -40, -70), new vec3(14, 5, 1), new vec4(0.2, 0.45, 0.5, 1))
+    const tgl = (this.toggleObj = b.slab("FocusToggle", this.content, new vec3(0, -40, -70), new vec3(14, 5, 1), new vec4(0.2, 0.45, 0.5, 1)))
     this.toggleLabel = b.text("FocusLabel", tgl, new vec3(0, 0, 0.6), "Focus: OFF", 22, WHITE, 14, 5)
     b.pinchableBox(tgl, new vec3(1, 1, 1), () => this.setFocus(!this.focusOn))
     tgl.getTransform().setLocalScale(new vec3(14, 5, 1))
@@ -185,6 +187,11 @@ export class BlinkBuddy extends BaseScriptComponent {
   private setState(s: BBState) {
     this.state = s
     this.stateT = 0
+    // keep the display nearly empty during the look-away and the eye exercise
+    const quiet = s === "LOOK" || s === "EIGHT"
+    this.monitorObj.enabled = !quiet
+    this.skipBtn.enabled = !quiet
+    this.toggleObj.enabled = s !== "LOOK"
     this.log.push(`${(getTime() - this.t0).toFixed(1)} ${s}`)
     print("[BlinkBuddy] state " + s)
   }
