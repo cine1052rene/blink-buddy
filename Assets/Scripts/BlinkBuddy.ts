@@ -5,10 +5,10 @@ import {Builder, HILL, OUTLINE, SOFT, WARM, WHITE} from "./BBVisuals"
 
 export type BBState = "OFF" | "IDLE" | "CUE" | "FLY_OUT" | "LOOK" | "EIGHT" | "RETURN"
 
-const HOME = new vec3(14, -8, -70) // ~20 deg right of gaze, slightly low, beside the monitor
-const WINDOW_POS = new vec3(-100, 10, -600) // 6 m away, front-left
-const WINDOW_STOP = new vec3(-100, 10, -560)
-const EIGHT_CENTER = new vec3(0, 0, -150)
+const HOME = new vec3(15, -2, -70) // right edge of the monitor, inside the start gaze cone
+const WINDOW_POS = new vec3(-100, 90, -600) // 6 m away, front-left, above-left of the monitor in the view
+const WINDOW_STOP = new vec3(-100, 84, -560)
+const EIGHT_CENTER = new vec3(0, -2, -150)
 const CUE_BLINKS = 3
 const CUE_TIMEOUT = 10
 const FLY_TIME = 2
@@ -57,6 +57,12 @@ export class BlinkBuddy extends BaseScriptComponent {
   private toggleObj: SceneObject
   private card: Text
   private toggleLabel: Text
+  private demoLabel: SceneObject
+  private lidL: SceneObject
+  private lidR: SceneObject
+  private pupilL: SceneObject
+  private pupilR: SceneObject
+  private demoStarted = false
   private ready = false
 
   private stateT = 0
@@ -87,24 +93,25 @@ export class BlinkBuddy extends BaseScriptComponent {
 
   private build() {
     const cam = WorldCameraFinderProvider.getInstance().getTransform()
-    const yaw = cam.getWorldRotation().toEulerAngles().y
     const b = new Builder(this.sphereMesh, this.boxMesh, this.baseMat)
     this.root = global.scene.createSceneObject("BlinkBuddyRoot")
     this.root.getTransform().setWorldPosition(cam.getWorldPosition())
-    this.root.getTransform().setWorldRotation(quat.fromEulerVec(new vec3(0, yaw, 0)))
+    this.root.getTransform().setWorldRotation(cam.getWorldRotation())
     this.content = b.obj("BB_Content", this.root)
     this.worldGroup = b.obj("BB_World", this.content)
 
     // Stand-in virtual monitor (faint outline), 70 cm ahead, eye level - 15 cm.
-    const mon = (this.monitorObj = b.outline("StandInMonitor", this.worldGroup, new vec3(-4, -8, -70), 26, 16, 0.5, SOFT))
-    b.text("MonitorLabel", mon, new vec3(0, 10, 0), "stand-in monitor", 12, SOFT, 30, 4)
+    const mon = (this.monitorObj = b.outline("StandInMonitor", this.worldGroup, new vec3(-3, -2, -70), 24, 14, 0.5, SOFT))
+    b.text("MonitorLabel", mon, new vec3(0, 9, 0), "stand-in monitor", 22, SOFT, 30, 4)
+    this.demoLabel = b.text("DemoLabel", mon, new vec3(0, -9.5, 0), "Preview: scripted demo", 18, new vec4(0.7, 0.75, 0.8, 1), 30, 3).getSceneObject().getParent()
+    this.demoLabel.enabled = this.demoAutoPlay && global.deviceInfoSystem.isEditor()
 
     // Stand-in window, 6 m away, 120 x 90 cm, faint blue outline + hills.
     this.windowObj = b.outline("StandInWindow", this.worldGroup, WINDOW_POS, 120, 90, 3, OUTLINE)
     b.ball("Hill1", this.windowObj, new vec3(-30, -38, 0), 60, HILL).getTransform().setLocalScale(new vec3(70, 25, 2))
     b.ball("Hill2", this.windowObj, new vec3(25, -36, 0), 60, HILL).getTransform().setLocalScale(new vec3(80, 35, 2))
     b.ball("Hill3", this.windowObj, new vec3(0, -30, 0), 60, HILL).getTransform().setLocalScale(new vec3(50, 20, 2))
-    b.text("WindowLabel", this.windowObj, new vec3(0, 55, 0), "stand-in window", 80, OUTLINE, 150, 15)
+    b.text("WindowLabel", this.windowObj, new vec3(0, 58, 0), "your real window (stand-in)", 260, OUTLINE, 200, 15)
 
     // Figure-eight path (faint dots), hidden until needed.
     this.pathGroup = b.obj("EightPath", this.worldGroup)
@@ -116,11 +123,19 @@ export class BlinkBuddy extends BaseScriptComponent {
 
     // Firefly (pinch target), card, ring timer.
     this.fireflyGroup = b.obj("Firefly", this.worldGroup, HOME)
+    b.ball("Halo2", this.fireflyGroup, new vec3(0, 0, -3.4), 13, new vec4(0.22, 0.17, 0.05, 1)).getTransform().setLocalScale(new vec3(13, 13, 0.4))
+    b.ball("Halo1", this.fireflyGroup, new vec3(0, 0, -3.0), 9, new vec4(0.5, 0.38, 0.1, 1)).getTransform().setLocalScale(new vec3(9, 9, 0.4))
     this.fireflyBody = b.ball("FireflyBody", this.fireflyGroup, vec3.zero(), 6, WARM)
-    this.eyeL = b.ball("EyeL", this.fireflyGroup, new vec3(-1.2, 0.6, 2.7), 1.3, WHITE)
-    this.eyeR = b.ball("EyeR", this.fireflyGroup, new vec3(1.2, 0.6, 2.7), 1.3, WHITE)
+    const lidCol = new vec4(0.95, 0.7, 0.15, 1)
+    const dark = new vec4(0.25, 0.12, 0.02, 1)
+    this.eyeL = b.ball("EyeL", this.fireflyGroup, new vec3(-1.3, 0.6, 2.8), 1.9, WHITE)
+    this.eyeR = b.ball("EyeR", this.fireflyGroup, new vec3(1.3, 0.6, 2.8), 1.9, WHITE)
+    this.pupilL = b.ball("PupilL", this.fireflyGroup, new vec3(-1.3, 0.6, 3.3), 0.9, dark)
+    this.pupilR = b.ball("PupilR", this.fireflyGroup, new vec3(1.3, 0.6, 3.3), 0.9, dark)
+    this.lidL = b.ball("LidL", this.fireflyGroup, new vec3(-1.3, 1.5, 3.6), 1, lidCol)
+    this.lidR = b.ball("LidR", this.fireflyGroup, new vec3(1.3, 1.5, 3.6), 1, lidCol)
     b.pinchable(this.fireflyGroup, 6, () => this.onFireflyPinch())
-    this.card = b.text("Card", this.fireflyGroup, new vec3(0, -10, 3.5), "", 40, WHITE, 40, 8)
+    this.card = b.text("Card", this.fireflyGroup, new vec3(-10, 12, 3.5), "", 30, WHITE, 40, 8)
     this.ringGroup = b.obj("Ring", this.fireflyGroup)
     for (let i = 0; i < RING_DOTS; i++) {
       const a = (i / RING_DOTS) * Math.PI * 2
@@ -128,18 +143,21 @@ export class BlinkBuddy extends BaseScriptComponent {
     }
     this.ringGroup.enabled = false
 
-    // Buttons below the monitor.
-    // Buttons below the monitor: an unscaled group (collider + Interactable) holding a scaled slab and its label.
-    const tgl = (this.toggleObj = b.obj("FocusToggle", this.content, new vec3(-8, -21, -70)))
-    b.slab("FocusToggleSlab", tgl, vec3.zero(), new vec3(14, 5, 1), new vec4(0.2, 0.45, 0.5, 1))
-    this.toggleLabel = b.text("FocusLabel", tgl, new vec3(0, 0, 0.7), "Focus: OFF", 20, WHITE, 14, 5)
-    b.pinchableBox(tgl, new vec3(14, 5, 2), () => this.setFocus(!this.focusOn))
-    this.skipBtn = b.obj("SkipButton", this.worldGroup, new vec3(10, -21, -70))
-    b.slab("SkipSlab", this.skipBtn, vec3.zero(), new vec3(16, 5, 1), new vec4(0.5, 0.35, 0.15, 1))
-    b.text("SkipLabel", this.skipBtn, new vec3(0, 0, 0.7), "Demo: skip 20 min", 11, WHITE, 16, 5)
-    b.pinchableBox(this.skipBtn, new vec3(16, 5, 2), () => this.skipTimer())
+    // Focus control: a real UIKit Button (onTriggerUp), 14 x 5 cm, under the monitor.
+    const fb = b.uiButton("FocusToggle", this.content, new vec3(-3, -16, -70), new vec3(14, 5, 1), () => this.setFocus(!this.focusOn))
+    this.toggleObj = fb.obj
+    this.toggleLabel = b.text("FocusLabel", this.toggleObj, new vec3(0, 0, 1.2), "Focus mode: OFF", 20, WHITE, 14, 5)
+    b.outline("FocusOutline", this.toggleObj, new vec3(0, 0, 0.6), 14, 5, 0.35, SOFT)
+    this.skipBtn = b.obj("SkipButton", this.worldGroup, new vec3(12, -16, -70))
+    b.slab("SkipSlab", this.skipBtn, vec3.zero(), new vec3(12, 4.5, 1), new vec4(0.5, 0.35, 0.15, 1))
+    b.text("SkipLabel", this.skipBtn, new vec3(0, 0, 0.7), "Demo: skip 20 min", 16, WHITE, 12, 4.5)
+    b.pinchableBox(this.skipBtn, new vec3(12, 4.5, 2), () => this.skipTimer())
 
-    this.worldGroup.enabled = false
+    this.fireflyGroup.enabled = false
+    this.windowObj.enabled = false
+    this.skipBtn.enabled = false
+    this.worldGroup.enabled = true
+    this.setEyes(1)
     this.ready = true
     this.t0 = getTime()
     print("[BlinkBuddy] built. Never use while driving. demoAutoPlay=" + this.demoAutoPlay)
@@ -154,8 +172,7 @@ export class BlinkBuddy extends BaseScriptComponent {
   setFocus(on: boolean) {
     if (!this.ready || on === this.focusOn) return
     this.focusOn = on
-    this.toggleLabel.text = on ? "Focus: ON" : "Focus: OFF"
-    this.worldGroup.enabled = on
+    this.toggleLabel.text = on ? "Focus mode: ON" : "Focus mode: OFF"
     this.resetFirefly()
     this.blinkTimer = this.blinkIntervalSec
     this.breakTimer = this.breakIntervalSec
@@ -191,7 +208,9 @@ export class BlinkBuddy extends BaseScriptComponent {
     // keep the display nearly empty during the look-away and the eye exercise
     const quiet = s === "LOOK" || s === "EIGHT"
     this.monitorObj.enabled = !quiet
-    this.skipBtn.enabled = !quiet
+    this.fireflyGroup.enabled = s !== "OFF"
+    this.windowObj.enabled = s !== "OFF"
+    this.skipBtn.enabled = !quiet && s !== "OFF"
     this.toggleObj.enabled = s !== "LOOK"
     this.log.push(`${(getTime() - this.t0).toFixed(1)} ${s}`)
     print("[BlinkBuddy] state " + s)
@@ -213,9 +232,17 @@ export class BlinkBuddy extends BaseScriptComponent {
   }
 
   private setEyes(open: number) {
-    const s = new vec3(1.3, 1.3 * Math.max(0.08, open), 1.3)
-    this.eyeL.getTransform().setLocalScale(s)
-    this.eyeR.getTransform().setLocalScale(s)
+    const o = Math.max(0, Math.min(1, open))
+    const h = 1.9 * (1 - o) + 0.01 // eyelid slides down from the top of each eye
+    const top = 0.6 + 0.95
+    for (const lid of [this.lidL, this.lidR]) {
+      const p = lid.getTransform().getLocalPosition()
+      lid.getTransform().setLocalPosition(new vec3(p.x, top - h / 2, p.z))
+      lid.getTransform().setLocalScale(new vec3(2.1, h + 0.02, 1))
+    }
+    const ps = new vec3(0.9, 0.9 * Math.max(0.05, o), 0.9)
+    this.pupilL.getTransform().setLocalScale(ps)
+    this.pupilR.getTransform().setLocalScale(ps)
   }
 
   private onFireflyPinch() {
@@ -248,6 +275,10 @@ export class BlinkBuddy extends BaseScriptComponent {
     this.clock += dt
     this.updateWalking(dt)
     this.applyVisibility(dt)
+    if (!this.focusOn && !this.demoStarted && this.demoAutoPlay && global.deviceInfoSystem.isEditor() && this.clock >= 2) {
+      this.demoStarted = true
+      this.setFocus(true) // scripted demo: Focus on 2 s after start, then the timeline runs
+    }
     if (!this.focusOn) return
     if (this.walking || this.still < RESUME_DELAY) return // timers + animation paused
 
@@ -346,6 +377,8 @@ export class BlinkBuddy extends BaseScriptComponent {
         this.setFireflyScale(1.5 - 0.5 * e)
         if (k >= 1) {
           this.say("Back to work, eyes refreshed", 5)
+          this.demoLabel.enabled = false
+          print("[BlinkBuddy] back to work t=" + this.clock.toFixed(1))
           this.blinkTimer = this.blinkIntervalSec
           this.breakTimer = this.breakIntervalSec
           this.setState("IDLE")
@@ -378,11 +411,11 @@ export class BlinkBuddy extends BaseScriptComponent {
   }
 
   private applyVisibility(dt: number) {
-    const hidden = !this.focusOn || this.walking || this.still < RESUME_DELAY
+    const hidden = this.walking || this.still < RESUME_DELAY
     const target = hidden ? 0 : 1
     this.visibility += Math.sign(target - this.visibility) * Math.min(Math.abs(target - this.visibility), dt * 2.5)
     const wasOn = this.worldGroup.enabled
-    const on = this.focusOn && this.visibility > 0.02
+    const on = this.visibility > 0.02
     if (on !== wasOn) this.worldGroup.enabled = on
     // shrink toward the user while fading (the display is additive, so no alpha needed)
     const s = Math.max(0.001, this.visibility)

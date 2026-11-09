@@ -15,12 +15,12 @@ export class Criterion2Scenario extends Scenario {
     await sleep(100)
     expect(bb().state).toBe("CUE")
     expect(cardText()).toBe("blink with me")
-    const eye = findSceneObjectByName("EyeL").getTransform()
+    const eye = findSceneObjectByName("LidL").getTransform() // eyelid height encodes open/closed
     let closes = 0
     let closed = false
     for (let i = 0; i < 60; i++) {
       await sleep(100) // 6 s covers the 4.5 s of blinking
-      const open = eye.getLocalScale().y / 1.3
+      const open = 1 - (eye.getLocalScale().y - 0.03) / 1.9
       if (!closed && open < 0.3) {
         closed = true
         closes++

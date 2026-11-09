@@ -1,6 +1,7 @@
 // Small helpers that build the Blink Buddy stand-ins from primitives.
 // Light, warm colours only: the Specs display is additive (black = transparent).
 import {Interactable} from "SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable"
+import {Button} from "SpectaclesUIKit.lspkg/Scripts/Components/Button/Button"
 
 export class Builder {
   constructor(
@@ -76,6 +77,17 @@ export class Builder {
     return it
   }
 
+  /** Real UIKit Button (outline style); onTriggerUp fires onPress. */
+  uiButton(name: string, parent: SceneObject, pos: vec3, size: vec3, onPress: () => void): {obj: SceneObject; button: Button} {
+    const o = this.obj(name, parent, pos)
+    const button = o.createComponent(Button.getTypeName()) as Button
+    button.setVariant({theme: "SnapOS3", shape: "Rectangle", style: "Ghost"})
+    button.size = size
+    button.initialize()
+    button.onTriggerUp.add(() => onPress())
+    return {obj: o, button}
+  }
+
   /** Box-shaped collider variant for flat buttons. */
   pinchableBox(o: SceneObject, size: vec3, onPinch: () => void): Interactable {
     const col = o.createComponent("Physics.ColliderComponent") as ColliderComponent
@@ -92,5 +104,5 @@ export class Builder {
 export const WARM = new vec4(1.0, 0.82, 0.3, 1)
 export const SOFT = new vec4(0.85, 0.95, 1.0, 1)
 export const OUTLINE = new vec4(0.45, 0.8, 1.0, 1)
-export const HILL = new vec4(0.25, 0.4, 0.5, 1)
+export const HILL = new vec4(0.6, 0.85, 0.7, 1)
 export const WHITE = new vec4(1, 1, 1, 1)

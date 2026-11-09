@@ -5,7 +5,7 @@ import {findInteractableByName} from "Leaf.lspkg/Interactors/InteractableUtils"
 import {DefaultLeafInteractor} from "Leaf.lspkg/Interactors/interactor/DefaultLeafInteractor"
 import {bb, focusOnViaToggle, freshStart} from "./TestUtil"
 
-/** Criterion 6: Focus off hides everything (only the Focus toggle itself stays, so you can turn it back on). */
+/** Criterion 6: Focus off hides firefly/window/skip (the quiet monitor outline and the Focus button stay). */
 @component
 export class Criterion6Scenario extends Scenario {
   async run(): Promise<void> {
@@ -15,9 +15,10 @@ export class Criterion6Scenario extends Scenario {
     await new DefaultLeafInteractor().trigger(findInteractableByName("FocusToggle"))
     await sleep(500)
     expect(bb().focusOn).toBe(false)
-    for (const n of ["Firefly", "StandInMonitor", "StandInWindow", "SkipButton", "Ring", "EightPath"]) {
+    for (const n of ["Firefly", "StandInWindow", "SkipButton", "Ring", "EightPath"]) {
       expect(findSceneObjectByName(n).isEnabledInHierarchy).toBe(false)
     }
     expect(findSceneObjectByName("FocusToggle").isEnabledInHierarchy).toBe(true)
+    expect(findSceneObjectByName("StandInMonitor").isEnabledInHierarchy).toBe(true) // quiet outline stays
   }
 }

@@ -45,3 +45,22 @@ The Interactive Preview only shows about +-16 degrees sideways (and about +-18 u
 
 ## Measured demo timeline (demoAutoPlay, seconds after Focus on)
 blink cue 4.0 | pinch (simulated) 9.0 | break starts 18.0 | at window 20.1 | figure-eight 40.1 | return starts 55.1 | back at monitor, "Back to work, eyes refreshed" 57.2.
+
+## Fix pass 2026-11-10 (layout, UIKit button, demo autoplay)
+Observed problem: with Focus off only the toggle was visible, the toggle did not react to mouse clicks, and the layout was off-screen.
+- **Root cause of the layout:** the Start camera is pitched 18.75 deg down (preview pose rotation x=341.25), but the content root only copied the camera yaw, so "straight ahead" was 18.75 deg above the real gaze. The root now copies the **full camera rotation** (pitch + yaw), so all offsets are relative to the Start gaze.
+- **New layout (cm, relative to Start gaze, -Z forward; preview shows about +-18 deg):** monitor outline 24x14 at (-3,-2,-70); firefly home (15,-2,-70) at the monitor's right edge; Focus button 14x5 at (-3,-16,-70); skip button 12x4.5 at (12,-16,-70); window 120x90 at (-100,90,-600) = above-left of the monitor in the view, no overlap (a lower window overlapped the monitor on screen, so I put it up-left). Firefly flies to (-100,84,-560), so firefly and window are in the same view during the break; no steering arrow needed.
+- **Focus control is now a real UIKit `Button`** (SnapOS3 Ghost, 14x5x1 cm, `onTriggerUp`), created at runtime in `BBVisuals.uiButton`, with a thin light outline and the label "Focus mode: ON/OFF". It keeps the scene-object name `FocusToggle`, so LEAF still finds its Interactable.
+- **Focus OFF now shows the quiet monitor outline + Focus button** (+ "Preview: scripted demo" label); firefly, window, skip button, ring and card appear only with Focus ON. Decision: otherwise the first frames showed almost nothing. Criterion 6 test updated (monitor stays visible when off).
+- **demoAutoPlay (editor only, saved TRUE):** Focus turns ON automatically 2 s after start, then the existing timeline runs. Label "Preview: scripted demo" under the monitor until "Back to work".
+- **Firefly:** 6 cm warm-yellow body + two flat halos (9 and 13 cm), white eyes with pupils, and eyelid shapes (warm half-discs) that slide down/up during the cue. Criterion 2 now measures the lid height instead of the eye scale.
+- **Window:** light blue outline, light green hills, label "your real window (stand-in)".
+- Text sizes raised (world-space Text size is small at 70 cm; 20 is about right for a 14 cm button).
+
+### Timing (preview, from lens start)
+Focus ON at 2.0 s | blink cue 6.0 s | simulated pinch 11 s | break (fly out) 20 s | at window 22 s | figure-eight 42 s | return 57 s | **"Back to work" at 59.0 s total** (59.1/59.0 in two runs).
+Screenshots: `devpost/shots/demo_01..05.png` at about 0.4 s, 6 s, 27 s, 46 s, 61 s after lens start (exact times are limited by tool latency; 25 s / 45 s / 60 s targets were met within about 2 s).
+
+### LEAF after the fix (run in the Interactive Preview)
+c1 PASS, c2 PASS (after the lid change in the test), c3 PASS, c4 PASS, c5 PASS, c6 PASS, x7 demo timeline PASS (58.7 s). `LeafRunner` disabled again in the saved scene.
+- Not verified: a real mouse click on the new UIKit button (no PreviewInteractTool allowed). LEAF triggers its Interactable (UIKit `onTriggerUp` fires from `Interactable.onTriggerEnd`), which is the same path as a mouse click in the preview.
